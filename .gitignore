@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .che/
 .gen/
 gen/
@@ -14,6 +15,8 @@ _out
 default-*.json
 package-lock.json
 
+=======
+>>>>>>> refs/remotes/origin/master
 fioriHtmlRunner.html
 .*/fioriHtmlRunner.html
 mock_preview_sapui5.html

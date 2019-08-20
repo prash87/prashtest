@@ -1,9 +1,9 @@
 ID: PrashTest
-_schema-version: "2.1"
+_schema-version: '2.1'
 description: Test - Business Application
 version: 0.0.1
 modules:
-  - name: PrashTest-db
+  - name: db
     type: hdb
     path: db
     parameters:
@@ -11,7 +11,19 @@ modules:
       disk-quota: 256M
     requires:
       - name: PrashTest-db-hdi-container
-  - name: PrashTest-srv
+        properties:
+          TARGET_CONTAINER: '~{hdi-container-name}'
+      - name: cross-container-service-1
+        group: SERVICE_REPLACEMENTS
+        properties:
+          key: ServiceName_1
+          service: '~{the-service-name}'
+      - name: hdi_user_db
+        group: SERVICE_REPLACEMENTS
+        properties:
+          key: hdi-user-service
+          service: '~{user-container-name}'
+  - name: srv
     type: nodejs
     path: srv
     parameters:
@@ -20,11 +32,40 @@ modules:
     provides:
       - name: srv_api
         properties:
-          url: ${default-url}
+          url: '${default-url}'
     requires:
       - name: PrashTest-db-hdi-container
+  - name: web
+    type: html5
+    path: web
+    requires:
+      - name: PrashTest-00-uaa
+  - name: user_db
+    type: hdb
+    path: user_db
+    requires:
+      - name: hdi_user_db
+        properties:
+          TARGET_CONTAINER: '~{user-container-name}'
 resources:
   - name: PrashTest-db-hdi-container
     type: com.sap.xs.hdi-container
     properties:
-      hdi-container-name: ${service-name}
+      hdi-container-name: '${service-name}'
+  - name: PrashTest-00-uaa
+    type: com.sap.xs.uaa-space
+    parameters:
+      path: ./xs-security.json
+  - name: cross-container-service-1
+    parameters:
+      service-name: CROSS_SCHEMA_SFLIGHT_00
+    properties:
+      the-service-name: '${service-name}'
+    type: org.cloudfoundry.existing-service
+  - name: hdi_user_db
+    parameters:
+      config:
+        schema: PrashTest_HANA_USER_00
+    properties:
+      user-container-name: '${service-name}'
+    type: com.sap.xs.hdi-container
